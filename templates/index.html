@@ -1,0 +1,257 @@
+{% extends '_base.html' %}
+
+
+{% block head_title %}What are you doing?{% endblock %}
+
+{% block content %}
+<h1 style="text-align: center;">We'll show you charts like these</h1>
+<h6 style="text-align: center;">If you like let's sign in and see how you spend your time!</h6>
+<br>
+<br>
+<form>
+    <div class="row mb-3 justify-content-center">
+      
+      <label for="id_start" class="col-auto col-form-label"><label for="id_start">From:</label></label>
+      <div class="col-auto">
+        <input type="date" class="form-control" id="id_start" name="start" value="2022-05-10" min="2022-05-07" max="2022-05-25" required>
+      </div>
+      
+      <label for="id_end" class="col-auto col-form-label"><label for="id_end">To:</label></label>
+      <div class="col-auto">
+        <input type="date" class="form-control" id="id_end" name="end" value="2022-05-16" min="2022-05-07" max="2022-05-25" required>
+      </div>
+
+      <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Filter</button>
+      </div>
+    </div>
+</form>
+<!-- ###################### Charts ###################### -->
+<!-- day based chart -->
+<div class="row">
+    <div class="col">
+        <canvas id="dayBasedChart"></canvas>
+    </div>
+</div>
+<br>
+<br>
+
+<!-- Doughnut and Horizontal-Bar Charts -->
+<div class="row">
+  <div class="col-6">
+    <canvas id="subjectBasedChart"></canvas>
+  </div>
+  <div class="col-6">
+    <canvas id="tagBasedChart" height="300"></canvas>
+  </div>
+</div>
+<br>
+<br>
+
+<!-- ################# Time Logs Table ################# -->
+<h3>Recent records:</h3>
+<div class="row">
+  <div class="col">
+    <table class="table">
+
+      <thead>
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Subject</th>
+          <th scope="col">Time</th>
+          <th scope="col">Description</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          <td>16/5/2022</td>
+          <td>Study</td>
+          <td>3h 30m</td>
+          <td>Studying some book</td>
+        </tr>
+        <tr>
+          <td>16/5/2022</td>
+          <td>Eat</td>
+          <td>1h 15m</td>
+          <td>Eating the dinner</td>
+        </tr>
+        <tr>
+          <td>16/5/2022</td>
+          <td>Django</td>
+          <td>4h 20m</td>
+          <td>working on django project to learn...</td>
+        </tr>
+      </tbody>
+
+    </table>
+  </div>
+</div>
+<br>
+
+{% endblock content %}
+
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // ######################### day based chart (bar chart) #########################
+  const barChartData = {
+    labels: ['2022-05-10', '2022-05-11', '2022-05-12', '2022-05-13', '2022-05-14', '2022-05-15', '2022-05-16'],
+    datasets: [
+      {
+        label: 'sleep',
+        data: [6, 9, 10, 8, 6, 3, 6],
+        backgroundColor: 'rgb(255, 99, 132)',
+      },
+      {
+        label: 'work',
+        data: [10, 12, 9, 8, 11, 12, 11],
+        backgroundColor: 'rgb(54, 162, 235)',
+      },
+      {
+        label: 'family',
+        data: [2, 0, 2, 3, 4, 1, 2],
+        backgroundColor: 'rgb(255, 205, 86)',
+      },
+      {
+        label: 'social media',
+        data: [3, 1, 2, 3, 0, 6, 4],
+        backgroundColor: 'rgb(20, 230, 50)',
+      },
+      {
+        label: 'eat',
+        data: [3, 2, 1, 2, 3, 2, 1],
+        backgroundColor: 'rgb(235, 54, 162)',
+      },
+    ]
+  };
+
+  const barChartConfig = {
+      type: 'bar',
+      data: barChartData,
+      options: {
+        plugins: {
+          legend: {
+            position: 'right',
+          },
+          title: {
+            display: true,
+            text: 'How do you spend your days? (duration is based on hours)'
+          },
+        },
+        responsive: true,
+        scales: {
+          x: {
+            stacked: true,
+          },
+          y: {
+            stacked: true
+          }
+        }
+      }
+    };
+
+  const barChart = new Chart(
+      document.getElementById('dayBasedChart'),
+      barChartConfig
+  );
+
+  // ######################### Subject Based Chart (doughnut chart) #########################
+  const doughnutChartData = {
+    labels:  ['sleep', 'work', 'family', 'youtube', 'study', 'eat'],
+    datasets: [{
+      label: 'data',
+      data: [100, 60, 50, 40, 30, 10],
+      backgroundColor: [
+        'rgb(54, 162, 235)',
+        'rgb(255, 99, 132)',
+        'rgb(255, 205, 86)',
+        'rgb(20, 230, 50)',
+        'rgb(235, 54, 162)',
+        'rgb(100, 70, 105)'
+      ],
+      hoverOffset: 4
+    }]
+  };
+
+  const doughnutChartConfig = {
+    type: 'doughnut',
+    data: doughnutChartData,
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+        },
+        title: {
+          display: true,
+          text: 'Allocated time to each subject based on hours'
+        }
+      }
+    },
+  };
+
+  const doughnutChart = new Chart(
+    document.getElementById('subjectBasedChart'),
+    doughnutChartConfig
+  );
+
+
+  // ######################### Tag Based Chart (horizontal bar chart) #########################
+  const horizontalBarChartData = {
+    labels: ['high focus', 'perfect', 'not bad', 'excellent', 'sleeply', 'low focus', 'awful'],
+    datasets: [{
+      data: [100, 80, 70, 65, 50, 30, 15],
+      backgroundColor: [
+        'rgba(54, 162, 235, 0.2)',
+        'rgba(255, 99, 132, 0.2)',
+        'rgba(75, 192, 192, 0.2)',
+        'rgba(255, 159, 64, 0.2)',
+        'rgba(153, 102, 255, 0.2)',
+        'rgba(255, 205, 86, 0.2)',
+        'rgba(201, 203, 207, 0.2)'
+      ],
+      borderColor: [
+        'rgb(255, 99, 132)',
+        'rgb(255, 159, 64)',
+        'rgb(255, 205, 86)',
+        'rgb(75, 192, 192)',
+        'rgb(54, 162, 235)',
+        'rgb(153, 102, 255)',
+        'rgb(201, 203, 207)'
+      ],
+      borderWidth: 1
+    }]
+  };
+
+  const horizontalBarChartConfig = {
+      type: 'bar',
+      data: horizontalBarChartData,
+      options: {
+          responsive: true,
+          indexAxis: 'y',
+          scales: {
+              y: {
+                beginAtZero: true
+              }
+          },
+          plugins: {
+            legend: {
+              display: false,
+              position: 'top',
+            },
+            title: {
+              display: true,
+              text: 'Allocated time to each tag based on hours'
+            }
+          }
+      },
+  };
+
+  const horizontalBarChart = new Chart(
+      document.getElementById('tagBasedChart'),
+      horizontalBarChartConfig
+    );
+</script>
+{% endblock %}

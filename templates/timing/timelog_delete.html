@@ -1,0 +1,30 @@
+{% extends '_base.html' %}
+{% load timing_extras %}
+
+{% block head_title %} Delete Record {% endblock %}
+
+{% block content %}
+<div style="text-align: center;">
+  <h3>Are you sure to delete this record?</h3>
+  <div class="row justify-content-center">
+    <div class="card" style="width: 18rem;">
+      <div class="card-body">
+        <h5 class="card-title">{{ timelog.subject }}: {{ timelog.duration|hours_and_minutes }}</h5>
+        <h6 class="card-subtitle mb-2 text-muted">{{ timelog.date }}</h6>
+        <p class="card-text">{{ timelog.description|truncatechars:20 }}</p>
+        <form method="post">
+          {% csrf_token %}
+          <div style="text-align: center;">
+            <a href="{% url 'timing:timelogs' %}" class="btn btn-secondary" role="button">Cancel</a>
+            <a href="{% url 'timing:timelog-detail' pk=timelog.pk %}" class="btn btn-primary" role="button">View</a>
+            <button class="btn btn-danger" type="submit">Delete</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<br>
+
+
+{% endblock %}

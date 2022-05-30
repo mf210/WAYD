@@ -1,0 +1,18 @@
+{% extends '_base.html' %}
+{% load timing_extras %}
+
+{% block head_title %} Record Details {% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h5 class="card-header">{{ timelog.date }}</h5>
+        <div class="card-body">
+          <h5 class="card-title">{{ timelog.subject }}: {{ timelog.duration|hours_and_minutes }}</h5>
+          <p class="card-text">{{ timelog.description }}</p>
+          <h5>Tags:</h5>
+          {% for tag in timelog.tags.all %}
+            <button type="button" class="btn btn-secondary btn-sm">{{ tag.name }}</button>
+          {% endfor %}
+        </div>
+    </div>
+{% endblock content %}

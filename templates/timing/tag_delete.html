@@ -1,0 +1,24 @@
+{% extends '_base.html' %}
+
+{% block head_title %} Delete Tag {% endblock %}
+
+{% block content %}
+<div style="text-align: center;">
+  <h3>Are you sure to delete this tag?</h3>
+  <div class="row justify-content-center">
+    <div class="card" style="width: 18rem;">
+      <div class="card-body">
+        <h5 class="card-title">{{ tag.name }}</h5>
+        <form method="post">
+          {% csrf_token %}
+          <div style="text-align: center;">
+            <a href="{% url 'timing:tags' %}" class="btn btn-secondary" role="button">Cancel</a>
+            <button class="btn btn-danger" type="submit">Delete</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<br>
+{% endblock %}

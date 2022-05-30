@@ -1,0 +1,103 @@
+{% extends '_base.html' %}
+{% load timing_extras %}
+
+{% block head_title %} Recordrs {% endblock %}
+
+{% block content %}
+<!-- Form -->
+<form class="row g-3 justify-content-center" action="{% url 'timing:timelogs' %}" method="post">
+    {% csrf_token %}
+    <!-- select subject input -->
+    <div class="col-md-2">
+      <label class="form-label" for="id_subject">Subject:</label>
+      {{ timelog_form.subject }}
+    </div>
+    <!-- hours input -->
+    <div class="col-md-1">
+      <label class="form-label" for="id_hours">Hours:</label>
+      {{ timelog_form.hours }}
+    </div>
+    <!-- minutes input -->
+    <div class="col-md-1">
+      <label class="form-label" for="id_minutes">Minutes:</label>
+      {{ timelog_form.minutes }}
+    </div>
+    <!-- Date input -->
+    <div class="col-md-2">
+      <label class="form-label" for="id_date">Date:</label>
+      {{ timelog_form.date }}
+    </div>
+    <!-- Tags -->
+    <div class="col-md-2">
+      <label class="form-label" for="id_tags">Tags:</label>
+      {{ timelog_form.tags }}
+    </div>
+    <!-- Description -->
+    <div class="col-8">
+      <label class="form-label" for="id_description">Description:</label>
+      {{ timelog_form.description }}
+    </div>
+    <!-- Error messages -->
+    {% for _, message in timelog_form.errors.items %}
+    <div class="alert alert-danger col-7" role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+    <!-- submit button -->
+    <div class="d-grid gap-2 col-6">
+        <button class="btn btn-success" type="submit">Add</button>
+    </div>
+</form>
+
+<br>
+<!-- records list -->
+<h3>All Records:</h3>
+<div class="row">
+  <div class="col">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Subject</th>
+          <th scope="col">Duration</th>
+          <th scope="col">Description</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for timelog in page_obj %}
+        <tr>
+          <td>{{ timelog.date }}</td>
+          <td>{{ timelog.subject }}</td>
+          <td>{{ timelog.duration|hours_and_minutes }}</td>
+          <td>{{ timelog.description|truncatechars:40 }}</td>
+          <td>
+            <a href="{% url 'timing:timelog-detail' pk=timelog.pk %}" target="_blank" class="btn btn-outline-secondary btn-sm" role="button">view</a>
+            <a href="{% url 'timing:timelog-delete' pk=timelog.pk %}" class="btn btn-outline-danger btn-sm" role="button">delete</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- pagination -->
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+      </li>
+      {% endif %}
+      {% for num in page_range %}
+      <li class="page-item {% if page_obj.number == num %}active{% endif %}"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+      {% endfor %}
+      {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+      </li>
+      {% endif %}
+    </ul>
+</nav>
+{% endblock %}

@@ -1,0 +1,191 @@
+{% extends '_base.html' %}
+{% load static %}
+{% load timing_extras %}
+
+
+{% block head_title %}Home{% endblock %}
+
+{% block content %}
+
+    <!-- Date Forms -->
+    <form>
+      <div class="row mb-3 justify-content-center">
+        {% for field in date_form %}
+        <label for="{{ field.id_for_label }}" class="col-auto col-form-label">{{ field.label_tag }}</label>
+        <div class="col-auto">
+          <input type="{{ field.widget_type }}" class="form-control" id="{{ field.id_for_label }}" name="{{ field.html_name }}" value="{{ field.value }}" {% for name, value in field.field.widget.attrs.items %}{% if value is not False %} {{ name }}{% if value is not True %}="{{ value|stringformat:'s' }}"{% endif %}{% endif %}{% endfor %} required>
+        </div>
+        {% endfor %}
+
+        <div class="col-auto">
+          <button type="submit" class="btn btn-primary">Filter</button>
+        </div>
+      </div>
+    </form>
+    <!-- error messages -->
+    {% for _, message in date_form.errors.items %}
+      <div class="alert alert-danger" role="alert">
+        {{ message }}
+      </div>
+    {% endfor %}
+
+    <!-- ###################### Charts ###################### -->
+    <!-- day based chart -->
+    {{ date_based_chart_data|json_script:"date-based-chart-data" }}
+    <div class="row">
+        <div class="col">
+            <canvas id="dayBasedChart"></canvas>
+        </div>
+    </div>
+    <br>
+    <br>
+
+    <!-- Doughnut and Horizontal-Bar Charts -->
+    {{ subject_based_chart_data|json_script:"subject-based-chart-data" }}
+    {{ tag_based_chart_data|json_script:"tag-based-chart-data" }}
+    <div class="row">
+      <div class="col-6">
+        <canvas id="subjectBasedChart"></canvas>
+      </div>
+      <div class="col-6">
+        <canvas id="tagBasedChart" height="300"></canvas>
+      </div>
+    </div>
+    <br>
+    <br>
+
+    <!-- ################# Time Logs Table ################# -->
+    <h3>Recent records:</h3>
+    <div class="row">
+      <div class="col">
+        <table class="table">
+        
+          <thead>
+            <tr>
+              <th scope="col">Date</th>
+              <th scope="col">Subject</th>
+              <th scope="col">Duration</th>
+              <th scope="col">Description</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for timelog in timelogs %}
+            <tr>
+              <td>{{ timelog.date }}</td>
+              <td>{{ timelog.subject }}</td>
+              <td>{{ timelog.duration|hours_and_minutes }}</td>
+              <td>{{ timelog.description|truncatechars:40 }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+
+        </table>
+      </div>
+    </div>
+
+    <div class="d-grid gap-2 col-6 mx-auto">
+      <a href="{% url 'timing:timelogs' %}" class="btn btn-success" type="button">add new record</a>
+    </div>
+    <br>
+    <br>
+
+{% endblock content %}
+
+
+{% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      // ######################### day based chart (bar chart) #########################
+      const barChartData = JSON.parse(document.getElementById('date-based-chart-data').textContent);
+
+      const barChartConfig = {
+          type: 'bar',
+          data: barChartData,
+          options: {
+            plugins: {
+              legend: {
+                position: 'right',
+              },
+              title: {
+                display: true,
+                text: 'How do you spend your days? (duration is based on hours)'
+              },
+            },
+            responsive: true,
+            scales: {
+              x: {
+                stacked: true,
+              },
+              y: {
+                stacked: true
+              }
+            }
+          }
+        };
+
+      const barChart = new Chart(
+          document.getElementById('dayBasedChart'),
+          barChartConfig
+      );
+
+      // ######################### Subject Based Chart (doughnut chart) #########################
+      const doughnutChartData = JSON.parse(document.getElementById('subject-based-chart-data').textContent);
+
+      const doughnutChartConfig = {
+        type: 'doughnut',
+        data: doughnutChartData,
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+            },
+            title: {
+              display: true,
+              text: 'Allocated time to each subject based on hours'
+            }
+          }
+        },
+      };
+
+      const doughnutChart = new Chart(
+        document.getElementById('subjectBasedChart'),
+        doughnutChartConfig
+      );
+
+
+      // ######################### Tag Based Chart (horizontal bar chart) #########################
+      const horizontalBarChartData = JSON.parse(document.getElementById('tag-based-chart-data').textContent);
+
+      const horizontalBarChartConfig = {
+          type: 'bar',
+          data: horizontalBarChartData,
+          options: {
+              responsive: true,
+              indexAxis: 'y',
+              scales: {
+                  y: {
+                    beginAtZero: true
+                  }
+              },
+              plugins: {
+                legend: {
+                  display: false,
+                  position: 'top',
+                },
+                title: {
+                  display: true,
+                  text: 'Allocated time to each tag based on hours'
+                }
+              }
+          },
+      };
+
+      const horizontalBarChart = new Chart(
+          document.getElementById('tagBasedChart'),
+          horizontalBarChartConfig
+        );
+    </script>
+
+{% endblock scripts %}

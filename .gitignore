@@ -1,0 +1,8 @@
+### Django ###
+__pycache__/
+db.sqlite3
+app-messages/
+
+### Coverage ###
+.coverage
+htmlcov/

@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/WAYD
+    ports:
+      - "8000:8000"
+    restart: always
+    # # Environment variables For production
+    # environment:
+    #   - DJANGO_DEBUG=FALSE
+    #   - DJANGO_SECURE_SSL_REDIRECT=TRUE
+    #   - DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS=TRUE
+    #   - DJANGO_SECURE_HSTS_PRELOAD=TRUE
+    #   - DJANGO_SECURE_HSTS_SECONDS=31536000
+    #   - DJANGO_SESSION_COOKIE_SECURE=TRUE
+    #   - DJANGO_CSRF_COOKIE_SECURE=TRUE
+    #   - DJANGO_SECRET_KEY=vy5yralfkenfjkensqweoi82345snf4wzbfx__sqfn'qweg$$fsefn200iiirrwo05epteqq757n
+    #   - DJANGO_HOST_NAME=myhostname
+    #   - DJANGO_EMAIL_HOST_USER=example@gmail.com
+    #   - DJANGO_EMAIL_HOST_PASSWORD=pass123
+    depends_on:
+      - db
+  db:
+    image: mysql:8
+    volumes:
+      - mysql_data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpass123
+      - MYSQL_DATABASE=mysql-db
+      - MYSQL_USER=mysqluser
+      - MYSQL_PASSWORD=testpass123
+      - MYSQL_TCP_PORT=3306
+volumes:
+  mysql_data:
+
+
+    

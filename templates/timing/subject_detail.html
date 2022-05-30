@@ -1,0 +1,31 @@
+{% extends '_base.html' %}
+
+{% block head_title %}Subject Details{% endblock %}
+
+{% block content %}
+<!-- Form -->
+<form class="row g-3 justify-content-center" method="post">
+    {% csrf_token %}
+    <!-- subject name input -->
+    <div class="col-3">
+      <label class="form-label" for="id_name">Name:</label>
+      {{ subject_form.name }}
+    </div>
+    <!-- description input -->
+    <div class="col-8">
+      <label class="form-label" for="id_description">Description:</label>
+      {{ subject_form.description }}
+    </div>
+    <!-- submit button -->
+    <div class="col-1 align-self-end">
+        <button class="btn btn-primary" type="submit">Update</button>
+    </div>
+    <!-- Error messages -->
+    {% for _, message in subject_form.errors.items %}
+    <div class="alert alert-danger col-7" role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+</form>
+<br>
+{% endblock content %}

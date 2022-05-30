@@ -1,0 +1,25 @@
+{% extends '_base.html' %}
+
+{% block head_title %} Tag Details {% endblock %}
+
+{% block content %}
+<!-- Form -->
+<form class="row g-3 justify-content-center" method="post">
+    {% csrf_token %}
+    <!-- tag name input -->
+    <div class="col-4">
+      <label class="form-label" for="id_name">Name:</label>
+      {{ tag_form.name }}
+    </div>
+    <!-- submit button -->
+    <div class="col-2 align-self-end">
+        <button class="btn btn-primary" type="submit">Update</button>
+    </div>
+    <!-- Error messages -->
+    {% for _, message in tag_form.errors.items %}
+    <div class="alert alert-danger col-7" role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+</form>
+{% endblock content %}
