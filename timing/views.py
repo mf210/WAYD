@@ -26,20 +26,24 @@ def home(request):
     if request.GET.get('start') and request.GET.get('end'):
         date_form = DateForm(request.GET, min_date=min_date, max_date=max_date)
         if date_form.is_valid():
-            # overwrite the min and max dates with user's specified dates
+            # override the min and max dates with user's specified dates
             form_dates = date_form.clean()
             min_date, max_date = form_dates['start'], form_dates['end']
     
-    dates = create_date_list(min_date, max_date)
+    dates = create_dates_list(min_date, max_date)
     available_dates = set(user_timelogs.filter(date__range=(min_date, max_date))\
                           .values_list('date', flat=True).distinct())
     user_subjects = request.user.subject_set.all().order_by('last_modified')
     user_tags = request.user.tag_set.all().order_by('last_modified')
+    related_timelogs = list(user_timelogs.select_related('subject').prefetch_related('tags')\
+                            .filter(date__range=(min_date, max_date), subject__in=user_subjects))
     context = {
-        'date_based_chart_data': create_date_based_chart_data(user_subjects, dates, available_dates),
-        'subject_based_chart_data': create_subject_based_chart_data(user_subjects, min_date, max_date),
-        'tag_based_chart_data':  create_tag_based_chart_data(user_tags, min_date, max_date),
-        'timelogs': user_timelogs.all()[:10],
+        'date_based_chart_data': create_date_based_chart_data(
+            related_timelogs, user_subjects, dates, available_dates
+        ),
+        'subject_based_chart_data': create_subject_based_chart_data(related_timelogs, user_subjects),
+        'tag_based_chart_data':  create_tag_based_chart_data(related_timelogs, user_tags),
+        'timelogs': user_timelogs.select_related('subject').all()[:10],
         'date_form': date_form
     }
     return render(request, 'timing/home.html', context)
@@ -68,7 +72,7 @@ def timelogs(request):
 
     # pagination the timelog records
     page_num = request.GET.get('page')
-    paginator = Paginator(request.user.timelogs.all(), per_page=10)
+    paginator = Paginator(user.timelogs.select_related('subject'), per_page=10)
     page_obj = paginator.get_page(page_num)
 
     context = {
@@ -231,7 +235,7 @@ def tag_delete(request, pk):
     return render(request, 'timing/tag_delete.html', context)
 
 
-def create_date_based_chart_data(subjects, dates, available_dates):
+def create_date_based_chart_data(related_timelogs, subjects, dates, available_dates):
     # create json data for date based chart (stacked bar chart)
     datasets = []
     # create dataset and add them to the datasets list
@@ -243,11 +247,9 @@ def create_date_based_chart_data(subjects, dates, available_dates):
         dataset['data'] = []
         # get all related timelogs with each date and sum up the duration time (based on minutes)
         for date in dates:
-            spent_mins = 0
-            # don't hit the database for each date that doesn't exisit
             if date in available_dates:
-                for timelog in subject.timelog_set.filter(date=date):
-                    spent_mins += timelog.duration
+                spent_mins = sum(timelog.duration for timelog in related_timelogs
+                                 if timelog.date == date and timelog.subject == subject)
                 # add the sum of timelogs duration based on hours to the data
                 dataset['data'].append(round((spent_mins / 60), 1))
             else:
@@ -258,7 +260,7 @@ def create_date_based_chart_data(subjects, dates, available_dates):
     return {'labels': [d.isoformat() for d in dates], 'datasets': datasets}
 
 
-def create_subject_based_chart_data(subjects, min_date, max_date):
+def create_subject_based_chart_data(related_timelogs, subjects):
     # create json data for subject based chart (doughnut chart)
     labels = []
     dataset = {
@@ -267,10 +269,8 @@ def create_subject_based_chart_data(subjects, min_date, max_date):
     }
     for subject in subjects:
         labels.append(subject.name)
-        spent_mins = 0
-        for timelog in subject.timelog_set.filter(date__range=(min_date, max_date)):
-            spent_mins += timelog.duration
-        
+        spent_mins = sum(timelog.duration for timelog in related_timelogs
+                         if timelog.subject == subject)
         dataset['data'].append(round((spent_mins / 60), 1))
         dataset['backgroundColor'].append(f'rgb({randint(0, 255)},{randint(0, 255)},{randint(0, 255)})')
     
@@ -281,7 +281,7 @@ def create_subject_based_chart_data(subjects, min_date, max_date):
     return {'labels': labels, 'datasets': [dataset]}
 
 
-def create_tag_based_chart_data(tags, min_date, max_date):
+def create_tag_based_chart_data(related_timelogs, tags):
     # create json data for tag based chart (horizontal bar chart)
     labels = []
     dataset = {
@@ -290,10 +290,8 @@ def create_tag_based_chart_data(tags, min_date, max_date):
     }
     for tag in tags:
         labels.append(tag.name)
-        spent_mins = 0
-        for timelog in tag.timelog_set.filter(date__range=(min_date, max_date)):
-            spent_mins += timelog.duration
-        
+        spent_mins = sum(timelog.duration for timelog in related_timelogs
+                         if tag in timelog.tags.all())
         dataset['data'].append(round((spent_mins / 60), 1))
         dataset['backgroundColor'].append(f'rgb({randint(0, 255)},{randint(0, 255)},{randint(0, 255)})')
     
@@ -304,7 +302,7 @@ def create_tag_based_chart_data(tags, min_date, max_date):
     return {'labels': labels, 'datasets': [dataset]}
 
 
-def create_date_list(min_date, max_date):
+def create_dates_list(min_date, max_date):
     if min_date and max_date:
         dates = [min_date]
         while min_date < max_date:
