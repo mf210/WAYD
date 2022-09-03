@@ -4,8 +4,7 @@
 
 [![WAYD project image 1](https://github.com/mf210/WAYD/blob/main/project-images/page1.png)](https://faresi.pythonanywhere.com)
 
-I build this web application because  I wanted to answer to one of the frequently asked question in my life, "How did I spend my time today?".  
-In [WAYD](https://faresi.pythonanywhere.com) you can see how much time you spent on different subjects and how much time you were focused or happy or sad or etc.  
+I build this web application because  I wanted to answer to one of the frequently asked question in my life, "How did I spend my time today?". In [WAYD](https://faresi.pythonanywhere.com) you can see how much time you spent on different subjects and how much time you were focused or happy or sad or etc.  
 Also in this website you can determine a date range to filter results based on the days you want.  
 
 Website address: https://faresi.pythonanywhere.com
@@ -13,7 +12,7 @@ Website address: https://faresi.pythonanywhere.com
 
 ## The challenges I Faced
 
-### Passing data from django web application to javascript in secure mode:
+### Passing data from django web application to javascript in secure mode
 
 At first, I tried some methods that other developers had taught on youtube to solve this problem but I realized that they were unsafe and I implemented some XSS attacks on it for fun.  
 So I needed to safely outputted a Python object as JSON, and after a bit of googling, I used django built-in filter called **json_script**.
