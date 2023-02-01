@@ -1,4 +1,4 @@
-# Welcome to WAYD
+<h1 align="center">WAYD</h1>
 
 [WAYD](https://faresi.pythonanywhere.com) is a web application to show "What Are You Doing?"
 
